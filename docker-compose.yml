@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  fpv-analyzer:
+    image: fpv-video-analyzer:latest
+    build: .
+    container_name: fpv-analyzer
+    restart: unless-stopped
+    ports:
+      - "8420:8420"
+    environment:
+      # Ollama configuration
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=llava:13b
+      - OLLAMA_TIMEOUT=300
+
+      # Crawler configuration
+      - CRAWLER_ENABLED=true
+      - CRAWLER_ROOT=/videos
+      - CRAWLER_INTERVAL=1800
+
+      # Analysis parameters
+      - FRAME_SAMPLE_INTERVAL=2.0
+      - STATIC_THRESHOLD=0.02
+      - MAX_FRAMES_PER_VIDEO=100
+
+      # Server configuration
+      - LOG_LEVEL=INFO
+    volumes:
+      # Mount your video directory here
+      - ./videos:/videos
+      # Optional: persistent config
+      - ./config:/config
+    depends_on:
+      - ollama
+    networks:
+      - fpv-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8420/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - fpv-network
+    # Uncomment for GPU support
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+networks:
+  fpv-network:
+    driver: bridge
+
+volumes:
+  ollama_data:
+    driver: local
