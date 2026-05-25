@@ -9,6 +9,7 @@ This repository is a template for building using Claude Code. This guide establi
 
 - Do not include session URLs, agent names, or tool identifiers in PR bodies, commit messages, or code comments — keep those to chat only
 - PR descriptions: summary bullets + a test plan checklist is enough
+- Always reference the closing issue with `Resolves #X` (or `Closes #X`) in the PR body so GitHub auto-closes it on merge
 
 ## Development Philosophy and Methodology
 
